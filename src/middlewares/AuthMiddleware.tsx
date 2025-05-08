@@ -2,15 +2,15 @@ import React, { useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate, Outlet, NavLink } from "react-router-dom";
 import { LuUsers } from "react-icons/lu";
-import { IoBookOutline } from "react-icons/io5";
 import { RxQuestionMarkCircled } from "react-icons/rx";
-import { FaRegMessage } from "react-icons/fa6";
 import { logoutApi } from "../services/authService";
 import ResponseModel from "../models/response.model";
 import toast from "react-hot-toast";
 import { httpResponseHandler } from "../utils/responseHandlerUtil";
-import { MdDashboard } from "react-icons/md";
+import { MdDashboard, MdOutlineFeedback } from "react-icons/md";
 import { BiLogOut } from "react-icons/bi";
+import { IoCalendarOutline } from "react-icons/io5";
+
 
 const AuthMiddleware = () => {
   const { authInfo, updateAuthInfo } = useAuthStore((state) => state);
@@ -104,6 +104,32 @@ const AuthMiddleware = () => {
             >
                 <RxQuestionMarkCircled className="w-5 h-5" />
                 Inquiries
+            </NavLink>
+            <NavLink
+                to="events"
+                className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition-colors duration-200 ${
+                    isActive
+                    ? "bg-green-50 text-green-600 font-medium"
+                    : "text-gray-600 hover:bg-green-50 hover:text-green-500"
+                }`
+                }
+            >
+                <IoCalendarOutline className="w-5 h-5" />
+                Events
+            </NavLink>
+            <NavLink
+                to="feedbacks"
+                className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition-colors duration-200 ${
+                    isActive
+                    ? "bg-green-50 text-green-600 font-medium"
+                    : "text-gray-600 hover:bg-green-50 hover:text-green-500"
+                }`
+                }
+            >
+                <MdOutlineFeedback className="w-5 h-5" />
+                Feedbacks
             </NavLink>
           </div>
         </nav>

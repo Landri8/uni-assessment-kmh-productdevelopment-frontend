@@ -1,12 +1,90 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FiArrowRight, FiClock, FiMapPin, FiUsers } from "react-icons/fi";
 import NavBarComponent from "../components/NavBarComponent";
 import FooterComponent from "../components/FooterComponent";
+import EventInfoModel from "../models/event.model";
+import { getEventListApi } from "../services/clientService";
+import toast from "react-hot-toast";
+import ResponseModel from "../models/response.model";
+import { httpResponseHandler } from "../utils/responseHandlerUtil";
 
 const EventsScreen = () => {
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [events, setEvents] = useState<EventInfoModel[]>([]);
+
+  const getEventList = () => {
+    setIsLoading(true);
+    getEventListApi()
+    .then(({ data }: { data: ResponseModel }) => {
+      const getEventListResponseData = httpResponseHandler(data);
+      setEvents(getEventListResponseData);
+    })
+    .catch((error) => toast.error("Fetching event list failed"))
+    .finally(() => setIsLoading(false));
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString || dateString.length !== 8) return "Invalid date";
+    
+    const year = dateString.substring(0, 4);
+    const month = dateString.substring(4, 6);
+    const day = dateString.substring(6, 8);
+    
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // Function to get type-specific styling
+  const getTypeStyles = (type) => {
+    switch (type.toLowerCase()) {
+      case "conference":
+        return {
+          bgColor: "bg-purple-400",
+          textColor: "text-purple-600",
+          tagBgColor: "bg-white",
+        };
+      case "workshop":
+        return {
+          bgColor: "bg-green-400",
+          textColor: "text-green-600",
+          tagBgColor: "bg-white",
+        };
+      case "seminar":
+        return {
+          bgColor: "bg-blue-400",
+          textColor: "text-blue-600",
+          tagBgColor: "bg-white",
+        };
+      case "meetup":
+        return {
+          bgColor: "bg-yellow-400",
+          textColor: "text-yellow-600",
+          tagBgColor: "bg-white",
+        };
+      case "webinar":
+        return {
+          bgColor: "bg-indigo-400",
+          textColor: "text-indigo-600",
+          tagBgColor: "bg-white",
+        };
+      default:
+        return {
+          bgColor: "bg-gray-400",
+          textColor: "text-gray-600",
+          tagBgColor: "bg-white",
+        };
+    }
+  };
   
   useEffect(() => {
-      window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+
+    getEventList();
   }, []);
 
   return (
@@ -43,134 +121,69 @@ const EventsScreen = () => {
           </div>
 
           <div className="flex flex-wrap">
-            {/* Event Card 1 */}
-            <div className="w-full md:w-6/12 lg:w-4/12 px-4 mb-12">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                <div className="h-48 bg-green-400 relative">
-                  <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-full text-green-500 font-bold">
-                    Webinar
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent h-1/2"></div>
-                  <div className="absolute bottom-4 left-4 text-black font-bold">
-                    May 15, 2023
-                  </div>
+            {
+              isLoading ? (
+                <div className="w-full flex justify-center items-center">
+                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
                 </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-bold mb-4">
-                    The Future of Customer Service: AI-Powered Solutions
-                  </h3>
-                  <div className="flex items-center mb-3 text-gray-600">
-                    <FiClock className="mr-2" />
-                    <span>2:00 PM - 3:30 PM EST</span>
-                  </div>
-                  <div className="flex items-center mb-3 text-gray-600">
-                    <FiMapPin className="mr-2" />
-                    <span>Virtual Event (Zoom)</span>
-                  </div>
-                  <div className="flex items-center mb-4 text-gray-600">
-                    <FiUsers className="mr-2" />
-                    <span>Presented by Dr. Emily Chen, CEO</span>
-                  </div>
-                  <p className="text-gray-600 mb-4">
-                    Join us to discover how AI is transforming customer service
-                    experiences and how businesses are achieving higher
-                    satisfaction and efficiency.
+              ) : (
+               events.length > 0 ? (
+                events.map((event) => {
+                  const typeStyles = getTypeStyles(event.type);
+                  
+                  return (
+                    <div 
+                      key={event.id} 
+                      className="w-full md:w-6/12 lg:w-4/12 px-4 mb-12"
+                    >
+                      <div className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+                        <div className={`h-48 ${typeStyles.bgColor} relative`}>
+                          <div className={`absolute top-4 left-4 ${typeStyles.tagBgColor} px-4 py-2 rounded-full ${typeStyles.textColor} font-bold`}>
+                            {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent h-1/2"></div>
+                          <div className="absolute bottom-4 left-4 text-black font-bold">
+                            {formatDate(event.date)}
+                          </div>
+                        </div>
+                        <div className="p-6 flex flex-col flex-1">
+                          <h3 className="text-xl font-bold mb-4">
+                            {event.title}
+                          </h3>
+                          <div className="flex items-center mb-3 text-gray-600">
+                            <FiClock className="mr-2" />
+                            <span>{event.timeRange}</span>
+                          </div>
+                          <div className="flex items-center mb-3 text-gray-600">
+                            <FiMapPin className="mr-2" />
+                            <span>{event.location}</span>
+                          </div>
+                          <div className="flex items-center mb-4 text-gray-600">
+                            <FiUsers className="mr-2" />
+                            <span>Presented by {event.presenter}</span>
+                          </div>
+                          <p className="text-gray-600 mb-4">
+                            {event.eventDesc}
+                          </p>
+                          <div className="flex justify-between items-center mt-auto">
+                            <button className={`${typeStyles.bgColor} text-white font-bold px-4 py-2 rounded-lg hover:bg-opacity-90 transition duration-300`}>
+                              Register Now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+               ) : (
+                <div className="w-full h-96 bg-gray-100 flex justify-center items-center mb-16">
+                  <p className="text-2xl font-bold text-gray-600">
+                    No Upcoming Events
                   </p>
-                  <div className="flex justify-between items-center mt-auto">
-                    <button className="bg-green-400 text-white font-bold px-4 py-2 rounded-lg hover:bg-green-400 transition duration-300">
-                      Register Now
-                    </button>
-                    <div className="text-gray-500 text-sm">143 attending</div>
-                  </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Event Card 2 */}
-            <div className="w-full md:w-6/12 lg:w-4/12 px-4 mb-12">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                <div className="h-48 bg-blue-400 relative">
-                  <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-full text-green-400 font-bold">
-                    Conference
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent h-1/2"></div>
-                  <div className="absolute bottom-4 left-4 text-black font-bold">
-                    June 8-10, 2023
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-bold mb-4">
-                    AI Solution Annual Summit 2023
-                  </h3>
-                  <div className="flex items-center mb-3 text-gray-600">
-                    <FiClock className="mr-2" />
-                    <span>9:00 AM - 5:00 PM Daily</span>
-                  </div>
-                  <div className="flex items-center mb-3 text-gray-600">
-                    <FiMapPin className="mr-2" />
-                    <span>Grand Hyatt, San Francisco</span>
-                  </div>
-                  <div className="flex items-center mb-4 text-gray-600">
-                    <FiUsers className="mr-2" />
-                    <span>Featuring 30+ Industry Speakers</span>
-                  </div>
-                  <p className="text-gray-600 mb-4">
-                    Our flagship event brings together AI experts, business
-                    leaders, and innovators for three days of learning,
-                    networking, and inspiration.
-                  </p>
-                  <div className="flex justify-between items-center mt-auto">
-                    <button className="bg-green-400 text-white font-bold px-4 py-2 rounded-lg hover:bg-green-500 transition duration-300">
-                      Register Now
-                    </button>
-                    <div className="text-gray-500 text-sm">427 attending</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Event Card 3 */}
-            <div className="w-full md:w-6/12 lg:w-4/12 px-4 mb-12">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                <div className="h-48 bg-purple-400 relative">
-                  <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-full text-purple-500 font-bold">
-                    Workshop
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent h-1/2"></div>
-                  <div className="absolute bottom-4 left-4 text-black font-bold">
-                    May 28, 2023
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-bold mb-4">
-                    Hands-on AI: Implementing Virtual Assistants
-                  </h3>
-                  <div className="flex items-center mb-3 text-gray-600">
-                    <FiClock className="mr-2" />
-                    <span>10:00 AM - 3:00 PM CST</span>
-                  </div>
-                  <div className="flex items-center mb-3 text-gray-600">
-                    <FiMapPin className="mr-2" />
-                    <span>Tech Hub, Chicago</span>
-                  </div>
-                  <div className="flex items-center mb-4 text-gray-600">
-                    <FiUsers className="mr-2" />
-                    <span>Led by James Wilson, CTO</span>
-                  </div>
-                  <p className="text-gray-600 mb-4">
-                    This practical workshop will guide you through the process
-                    of designing, building, and implementing AI assistants for
-                    your specific use case.
-                  </p>
-                  <div className="flex justify-between items-center mt-auto">
-                    <button className="bg-purple-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-purple-600 transition duration-300">
-                      Register Now
-                    </button>
-                    <div className="text-gray-500 text-sm">76 attending</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+               )
+              )
+            }
           </div>
 
           <div className="text-center mt-4">

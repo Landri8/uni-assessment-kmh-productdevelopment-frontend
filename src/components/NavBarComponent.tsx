@@ -19,6 +19,9 @@ const NavBarComponent: React.FC = () => {
             <Link to={"/aboutus"} className="text-base font-medium text-gray-700 hover:text-gray-900">
               About Us
             </Link>
+            <Link to={"/testimonials"} className="text-base font-medium text-gray-700 hover:text-gray-900">
+              Testimonials
+            </Link>
             <Link to={"/contactus"} className="text-base font-medium text-gray-700 hover:text-gray-900">
               Contact Us
             </Link>

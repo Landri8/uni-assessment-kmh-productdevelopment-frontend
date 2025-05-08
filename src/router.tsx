@@ -15,6 +15,11 @@ import AdminUserDetailsScreen from './screens/admin/AdminUserDetailsScreen'
 import AdminUserCreationScreen from './screens/admin/AdminUserCreationScreen'
 import EventsScreen from './screens/EventsScreen'
 import AdminDashboardScreen from './screens/admin/AdminDashboardScreen'
+import AdminEventCreationScreen from './screens/admin/AdminEventCreationScreen'
+import AdminEventListScreen from './screens/admin/AdminEventListScreen'
+import AdminEventDetailsScreen from './screens/admin/AdminEventDetailsScreen'
+import TestimonialsScreen from './screens/TestimonialsScreen'
+import AdminFeedbackListScreen from './screens/admin/AdminFeedbackListScreen'
 
 const Router: React.FC = () => {
   return (
@@ -23,6 +28,7 @@ const Router: React.FC = () => {
       <Route path='/aboutus' Component={AboutScreen} />
       <Route path='/solutions' Component={SolutionsScreen} />
       <Route path='/events' Component={EventsScreen} />
+      <Route path='/testimonials' Component={TestimonialsScreen} />
       <Route path='/contactus' Component={ContactScreen} />
 
       <Route path='/admin'>
@@ -38,6 +44,10 @@ const Router: React.FC = () => {
           <Route path='users' Component={AdminUserListScreen} />
           <Route path='users/create' Component={AdminUserCreationScreen} />
           <Route path='users/:id' Component={AdminUserDetailsScreen} />
+          <Route path='events' Component={AdminEventListScreen} />
+          <Route path='events/create' Component={AdminEventCreationScreen} />
+          <Route path='events/:id' Component={AdminEventDetailsScreen} />
+          <Route path='feedbacks' Component={AdminFeedbackListScreen} />
         </Route>
 
       </Route>
